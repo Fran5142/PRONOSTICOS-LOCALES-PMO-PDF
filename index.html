@@ -57,10 +57,7 @@ body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #00
   font-size: 12px;
   transition: 0.2s;
 }
-.boton-ejemplo:hover {
-  background: #00b4d8;
-  color: #001f3f;
-}
+.boton-ejemplo:hover { background: #00b4d8; color: #001f3f; }
 
 #textoInforme {
   width: 100%; height: 180px; margin-bottom: 20px; padding: 12px;
@@ -82,7 +79,7 @@ body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #00
   opacity: 0.9;
 }
 
-/* --- FORMATO HOJA CARTA PDF --- */
+/* --- FORMATO HOJA DINÁMICO --- */
 #vistaPrevia {
   width: 215.9mm; 
   min-height: 279.4mm; 
@@ -106,21 +103,11 @@ body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #00
 .header-normal { font-weight: normal; display: block; }
 
 .logo-anchor { width: 120px; text-align: right; }
-.logo-estilizado { 
-  height: 130px; 
-  width: auto; 
-  display: inline-block; 
-}
+.logo-estilizado { height: 130px; width: auto; display: inline-block; }
 
 .titulo-principal {
-  text-align: center;
-  font-weight: bold;
-  text-decoration: underline;
-  display: block;
-  text-transform: uppercase;
-  line-height: 1.1;
-  margin-bottom: 5px;
-  font-size: 11pt;
+  text-align: center; font-weight: bold; text-decoration: underline;
+  display: block; text-transform: uppercase; line-height: 1.1; margin-bottom: 5px; font-size: 11pt;
 }
 
 .negrita { font-weight: bold; }
@@ -128,25 +115,14 @@ body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #00
 .contenido-texto { display: block; margin-bottom: 5px; text-align: justify; }
 
 .contenedor-temp {
-  display: grid;
-  grid-template-columns: 290px 10px auto; 
-  font-weight: bold;
-  line-height: 1.3;
-  font-size: 11pt;
+  display: grid; grid-template-columns: 290px 10px auto; 
+  font-weight: bold; line-height: 1.3; font-size: 11pt;
 }
 
 .espacio-arriba { margin-top: 15px; display: block; }
 
-.footer-informe {
-  margin-top: auto; 
-  text-align: right;
-  font-size: 8.5pt;
-  padding-top: 20px;
-}
+.footer-informe { margin-top: auto; text-align: right; font-size: 8.5pt; padding-top: 20px; }
 .footer-bold { font-weight: bold; }
-.footer-normal { font-weight: normal; }
-
-/* ESTILO PARA LINKS AZULES Y SUBRAYADOS */
 .footer-link-azul { color: #0000FF; text-decoration: underline; }
 </style>
 </head>
@@ -155,8 +131,8 @@ body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #00
 
 <div class="controles">
   <div class="titulo-web">
-    Creador de Informes meteorológicos En PDF<br>
-    Centro meteorológico marítimo de Puerto Montt
+    Centro meteorológico marítimo de Puerto Montt<br>
+    Creador de Informes meteorológicos en PDF
   </div>
   
   <input type="text" id="nombreArchivo" placeholder="Seleccione un ejemplo o escriba el nombre aquí">
@@ -180,7 +156,8 @@ body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #00
   
   <div>
     <button class="btn-accion" onclick="generarVista()">🔍 Ver vista previa</button>
-    <button class="btn-accion" onclick="generarPDF()" style="background:#e63946; color:white;">📄 Generar PDF</button>
+    <button class="btn-accion" onclick="generarPDF('letter')" style="background:#e63946; color:white;">📄 PDF CARTA</button>
+    <button class="btn-accion" onclick="generarPDF('legal')" style="background:#2a9d8f; color:white;">📄 PDF OFICIO</button>
   </div>
 
   <div class="autor-web">
@@ -286,18 +263,29 @@ function generarVista() {
     document.getElementById("vistaPrevia").innerHTML = htmlContent;
 }
 
-async function generarPDF() {
+async function generarPDF(formato) {
     const { jsPDF } = window.jspdf;
     const element = document.getElementById("vistaPrevia");
     
+    // Ajuste temporal de la altura de la vista previa para la captura
+    let altoMM;
+    if (formato === 'legal') {
+        altoMM = 355.6;
+        element.style.minHeight = "355.6mm";
+    } else {
+        altoMM = 279.4;
+        element.style.minHeight = "279.4mm";
+    }
+
     let nombrePersonalizado = document.getElementById("nombreArchivo").value.trim();
     if (!nombrePersonalizado) nombrePersonalizado = "Informe_Meteorologico";
 
     const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL("image/jpeg", 0.7);
-    const pdf = new jsPDF("p", "mm", "letter");
-    pdf.addImage(imgData, "JPEG", 0, 0, 215.9, 279.4);
-    pdf.save(nombrePersonalizado + ".pdf");
+    const imgData = canvas.toDataURL("image/jpeg", 0.8);
+    
+    const pdf = new jsPDF("p", "mm", formato);
+    pdf.addImage(imgData, "JPEG", 0, 0, 215.9, altoMM);
+    pdf.save(nombrePersonalizado + "_" + formato.toUpperCase() + ".pdf");
 }
 </script>
 </body>
