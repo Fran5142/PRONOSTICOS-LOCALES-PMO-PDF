@@ -70,7 +70,6 @@
             font-weight: 400;
         }
 
-        /* Formulario y Botones */
         #nombreArchivo {
             padding: 12px 20px;
             width: 100%;
@@ -260,16 +259,18 @@
             }).normalize("NFC");
         }
 
-        // FUNCIÓN DE FECHAS MEJORADA
         function formatearFechaEspecial(linea) {
             const regex = /(PRONOSTICO VALIDO|VALIDO) DESDE (\d{6}) HASTA (\d{6})/;
             const match = linea.match(regex);
             
             if (match) {
-                const prefijo = match[1]; // "PRONOSTICO VALIDO" o "VALIDO"
-                const d1_num = parseInt(match[2].substring(0, 2));
+                const prefijo = match[1];
+                const d1_str = match[2].substring(0, 2);
+                const d1_num = parseInt(d1_str);
                 const h1 = match[2].substring(2, 4) + ":" + match[2].substring(4, 6);
-                const d2_num = parseInt(match[3].substring(0, 2));
+                
+                const d2_str = match[3].substring(0, 2);
+                const d2_num = parseInt(d2_str);
                 const h2 = match[3].substring(2, 4) + ":" + match[3].substring(4, 6);
                 
                 const diasSemana = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
@@ -285,16 +286,20 @@
                 const diaNombre1 = diasSemana[f1.getDay()];
                 const mesNombre1 = meses[mesGlobalIndex];
 
-                // SI SOLO DICE "VALIDO DESDE" -> USAR FORMATO NUEVO "ENTRE LAS..."
                 if (prefijo === "VALIDO") {
-                    let parteFinal = (d1_num === d2_num) 
-                        ? `ENTRE LAS ${h1} Y ${h2} HRS.` 
-                        : `DESDE LAS ${h1} HASTA EL ${diasSemana[new Date(añoGlobal, (d2_num < d1_num ? mesGlobalIndex + 1 : mesGlobalIndex), d2_num).getDay()]} ${match[3].substring(0, 2)} A LAS ${h2} HRS.`;
-                    
-                    return `VALIDO: ${diaNombre1} ${match[2].substring(0, 2)} ${mesNombre1} ${parteFinal}`;
+                    if (d1_num === d2_num) {
+                        // MISMO DÍA (Corregido con "DE")
+                        return `VALIDO: ${diaNombre1} ${d1_str} DE ${mesNombre1} ENTRE LAS ${h1} Y ${h2} HRS.`;
+                    } else {
+                        // DISTINTO DÍA
+                        let m2Idx = (d2_num < d1_num) ? (mesGlobalIndex + 1) % 12 : mesGlobalIndex;
+                        let a2 = (d2_num < d1_num && mesGlobalIndex === 11) ? añoGlobal + 1 : añoGlobal;
+                        const f2 = new Date(a2, m2Idx, d2_num);
+                        const diaNombre2 = diasSemana[f2.getDay()];
+                        const mesNombre2 = meses[m2Idx];
+                        return `VALIDO: ${diaNombre1} ${d1_str} DE ${mesNombre1} ${h1} HASTA ${diaNombre2} ${d2_str} DE ${mesNombre2} ${h2} HRS.`;
+                    }
                 } 
-                
-                // SI DICE "PRONOSTICO VALIDO" -> USAR CÓDIGO ANTERIOR ORIGINAL
                 else {
                     let parteFinal;
                     if (d1_num === d2_num) {
@@ -303,9 +308,9 @@
                         let m2Idx = (d2_num < d1_num) ? (mesGlobalIndex + 1) % 12 : mesGlobalIndex;
                         let a2 = (d2_num < d1_num && mesGlobalIndex === 11) ? añoGlobal + 1 : añoGlobal;
                         const f2 = new Date(a2, m2Idx, d2_num);
-                        parteFinal = `HASTA ${diasSemana[f2.getDay()]} ${match[3].substring(0, 2)} DE ${meses[m2Idx]} ${h2} HRS.`;
+                        parteFinal = `HASTA ${diasSemana[f2.getDay()]} ${d2_str} DE ${meses[m2Idx]} ${h2} HRS.`;
                     }
-                    return `PRONOSTICO VALIDO ${diaNombre1} ${match[2].substring(0, 2)} DE ${mesNombre1} ${h1} ${parteFinal}`;
+                    return `PRONOSTICO VALIDO ${diaNombre1} ${d1_str} DE ${mesNombre1} ${h1} ${parteFinal}`;
                 }
             }
             return linea;
