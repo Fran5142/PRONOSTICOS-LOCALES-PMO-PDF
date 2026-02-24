@@ -45,7 +45,7 @@
             position: absolute; 
             left: 100px;          
             top: 40px;           
-            height: 270px;       
+            height: 240px;       
             width: auto;
             filter: drop-shadow(0 0 15px rgba(76, 201, 240, 0.4));
         }
@@ -246,29 +246,27 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
-        // Variables Globales para manejo de fechas
         let mesGlobalIndex = new Date().getMonth();
         let añoGlobal = new Date().getFullYear();
         let ultimoDiaProcesado = 0;
 
-        // Función para establecer el nombre del archivo
         function setNombre(nombre) { 
             document.getElementById('nombreArchivo').value = nombre; 
         }
 
-        // Normalización de texto (Quita tildes excepto Ñ)
         function normalizarTextoBase(texto) {
             return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, function(match) {
                 return match === '\u0303' ? match : ''; 
             }).normalize("NFC");
         }
 
-        // Formateo inteligente de fechas
+        // FUNCIÓN DE FECHAS MEJORADA
         function formatearFechaEspecial(linea) {
             const regex = /(PRONOSTICO VALIDO|VALIDO) DESDE (\d{6}) HASTA (\d{6})/;
             const match = linea.match(regex);
+            
             if (match) {
-                const prefijoOriginal = match[1]; 
+                const prefijo = match[1]; // "PRONOSTICO VALIDO" o "VALIDO"
                 const d1_num = parseInt(match[2].substring(0, 2));
                 const h1 = match[2].substring(2, 4) + ":" + match[2].substring(4, 6);
                 const d2_num = parseInt(match[3].substring(0, 2));
@@ -287,24 +285,32 @@
                 const diaNombre1 = diasSemana[f1.getDay()];
                 const mesNombre1 = meses[mesGlobalIndex];
 
-                let parteFinal;
-                if (d1_num === d2_num) {
-                    parteFinal = `HASTA ${h2} HRS.`;
-                } else {
-                    let m2Idx = (d2_num < d1_num) ? (mesGlobalIndex + 1) % 12 : mesGlobalIndex;
-                    let a2 = (d2_num < d1_num && mesGlobalIndex === 11) ? añoGlobal + 1 : añoGlobal;
-                    const f2 = new Date(a2, m2Idx, d2_num);
-                    parteFinal = `HASTA ${diasSemana[f2.getDay()]} ${match[3].substring(0, 2)} DE ${meses[m2Idx]} ${h2} HRS.`;
+                // SI SOLO DICE "VALIDO DESDE" -> USAR FORMATO NUEVO "ENTRE LAS..."
+                if (prefijo === "VALIDO") {
+                    let parteFinal = (d1_num === d2_num) 
+                        ? `ENTRE LAS ${h1} Y ${h2} HRS.` 
+                        : `DESDE LAS ${h1} HASTA EL ${diasSemana[new Date(añoGlobal, (d2_num < d1_num ? mesGlobalIndex + 1 : mesGlobalIndex), d2_num).getDay()]} ${match[3].substring(0, 2)} A LAS ${h2} HRS.`;
+                    
+                    return `VALIDO: ${diaNombre1} ${match[2].substring(0, 2)} ${mesNombre1} ${parteFinal}`;
+                } 
+                
+                // SI DICE "PRONOSTICO VALIDO" -> USAR CÓDIGO ANTERIOR ORIGINAL
+                else {
+                    let parteFinal;
+                    if (d1_num === d2_num) {
+                        parteFinal = `HASTA ${h2} HRS.`;
+                    } else {
+                        let m2Idx = (d2_num < d1_num) ? (mesGlobalIndex + 1) % 12 : mesGlobalIndex;
+                        let a2 = (d2_num < d1_num && mesGlobalIndex === 11) ? añoGlobal + 1 : añoGlobal;
+                        const f2 = new Date(a2, m2Idx, d2_num);
+                        parteFinal = `HASTA ${diasSemana[f2.getDay()]} ${match[3].substring(0, 2)} DE ${meses[m2Idx]} ${h2} HRS.`;
+                    }
+                    return `PRONOSTICO VALIDO ${diaNombre1} ${match[2].substring(0, 2)} DE ${mesNombre1} ${h1} ${parteFinal}`;
                 }
-
-                return (prefijoOriginal === "PRONOSTICO VALIDO") 
-                    ? `PRONOSTICO VALIDO ${diaNombre1} ${match[2].substring(0, 2)} DE ${mesNombre1} ${h1} ${parteFinal}`
-                    : `VALIDO DESDE ${diaNombre1} ${match[2].substring(0, 2)} DE ${mesNombre1} ${h1} ${parteFinal}`;
             }
             return linea;
         }
 
-        // Generación de la Vista Previa
         function generarVista() {
             mesGlobalIndex = new Date().getMonth();
             añoGlobal = new Date().getFullYear();
@@ -377,7 +383,6 @@
             document.getElementById("vistaPrevia").innerHTML = htmlContent;
         }
 
-        // Generación de PDF
         async function generarPDF(formato) {
             const { jsPDF } = window.jspdf;
             const element = document.getElementById("vistaPrevia");
@@ -385,7 +390,6 @@
 
             let altoMM = (formato === 'legal') ? 355.6 : 279.4;
             element.style.minHeight = altoMM + "mm";
-
             let nombrePersonalizado = document.getElementById("nombreArchivo").value.trim() || "Informe_Meteorologico";
 
             const canvas = await html2canvas(element, { scale: 2, useCORS: true });
