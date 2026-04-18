@@ -253,10 +253,47 @@
             document.getElementById('nombreArchivo').value = nombre; 
         }
 
+        /* FUNCIÓN DE NORMALIZACIÓN CON CORRECCIÓN AUTOMÁTICA DE TILDES */
         function normalizarTextoBase(texto) {
-            return texto.toUpperCase().normalize("NFD").replace(/[\u0300-\u036f]/g, function(match) {
-                return match === '\u0303' ? match : ''; 
-            }).normalize("NFC");
+            let t = texto.toUpperCase();
+            
+            // Diccionario de correcciones automáticas
+            const correcciones = {
+                "PRONOSTICO": "PRONÓSTICO",
+                "SITUACION": "SITUACIÓN",
+                "SINOPTICA": "SINÓPTICA",
+                "METEOROLOGICO": "METEOROLÓGICO",
+                "METEOROLOGICA": "METEOROLÓGICA",
+                "MAXIMA": "MÁXIMA",
+                "MINIMA": "MÍNIMA",
+                "RADIACION": "RADIACIÓN",
+                "INDICE": "ÍNDICE",
+                "VALIDEZ": "VALIDEZ",
+                "AREA": "ÁREA",
+                "OCEANICA": "OCEÁNICA",
+                "MARITIMA": "MARÍTIMA",
+                "PROBABLE": "PROBABLE",
+                "MIERCOLES": "MIÉRCOLES",
+                "SABADO": "SÁBADO",
+
+                "METEOROLOGIA": "METEOROLOGÍA",
+                "ANTICICLONICO": "ANTICICLÓNICO",
+                "CIRCULACION": "CIRCULACIÓN",
+                "CICLONICA": "CICLÓNICA",
+                "BAHIA": "BAHÍA",
+                "MARITIMO": "MARÍTIMO",
+		"APROXIMACION": "APROXIMACIÓN"
+
+ 
+            };
+
+            // Aplicamos las correcciones palabra por palabra
+            for (let [original, corregida] of Object.entries(correcciones)) {
+                let regex = new RegExp("\\b" + original + "\\b", "g");
+                t = t.replace(regex, corregida);
+            }
+
+            return t;
         }
 
         function formatearFechaEspecial(linea) {
@@ -264,7 +301,7 @@
             const match = linea.match(regex);
             
             if (match) {
-                const tipoPrefijo = match[1]; // "VALIDO" o "PRONOSTICO VALIDO"
+                const tipoPrefijo = match[1]; 
                 const d1_str = match[2].substring(0, 2);
                 const d1_num = parseInt(d1_str);
                 const h1 = match[2].substring(2, 4) + ":" + match[2].substring(4, 6);
@@ -273,7 +310,7 @@
                 const d2_num = parseInt(d2_str);
                 const h2 = match[3].substring(2, 4) + ":" + match[3].substring(4, 6);
                 
-                const diasSemana = ["DOMINGO", "LUNES", "MARTES", "MIERCOLES", "JUEVES", "VIERNES", "SABADO"];
+                const diasSemana = ["DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
                 const meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"];
 
                 if (d1_num < 5 && ultimoDiaProcesado > 25) {
@@ -286,14 +323,11 @@
                 const diaNombre1 = diasSemana[f1.getDay()];
                 const mesNombre1 = meses[mesGlobalIndex];
 
-                // Determinar el prefijo final basado en el original
-                let prefijoFinal = (tipoPrefijo === "VALIDO") ? "VALIDO:" : "PRONOSTICO VALIDO";
+                let prefijoFinal = (tipoPrefijo === "VALIDO") ? "VÁLIDO:" : "PRONÓSTICO VÁLIDO";
 
                 if (d1_num === d2_num) {
-                    // MISMO DÍA: VALIDO: MARTES 24 DE FEBRERO ENTRE LAS 08:00 Y 20:00 HRS.
                     return `${prefijoFinal} ${diaNombre1} ${d1_str} DE ${mesNombre1} ENTRE LAS ${h1} Y ${h2} HRS.`;
                 } else {
-                    // DÍA DISTINTO: PRONOSTICO VALIDO MARTES 24 DE FEBRERO 20:00 HASTA MIERCOLES 25 DE FEBRERO 08:00 HRS.
                     let m2Idx = (d2_num < d1_num) ? (mesGlobalIndex + 1) % 12 : mesGlobalIndex;
                     let a2 = (d2_num < d1_num && mesGlobalIndex === 11) ? añoGlobal + 1 : añoGlobal;
                     const f2 = new Date(a2, m2Idx, d2_num);
@@ -321,9 +355,9 @@
                 <div class="header-container">
                     <div class="header-text">
                         <span class="armada-bold">ARMADA DE CHILE</span>
-                        <span class="header-normal">DIRECCION GRAL. DEL TERRITORIO MARITIMO</span>
+                        <span class="header-normal">DIRECCIÓN GRAL. DEL TERRITORIO MARÍTIMO</span>
                         <span class="header-normal">Y DE MARINA MERCANTE</span>
-                        <span class="header-normal">GOBERNACION MARITIMA DE PUERTO MONTT</span>
+                        <span class="header-normal">GOBERNACIÓN MARÍTIMA DE PUERTO MONTT</span>
                     </div>
                     <div class="logo-anchor"><img src="${urlLogo}" class="logo-estilizado"></div>
                 </div>`;
@@ -345,14 +379,14 @@
                 else if (esValidez || /^(SABADO|DOMINGO|LUNES|MARTES|MIERCOLES|JUEVES|VIERNES)\s+\d+/i.test(linea)) {
                     htmlContent += `<span class="espacio-arriba"></span><div class="negrita">${lineaProcesada}</div>`;
                 }
-                else if (linea.startsWith("SITUACION SINOPTICA:") || linea.startsWith("PRONOSTICO:")) {
-                    htmlContent += `${linea.startsWith("PRONOSTICO:") ? '<span class="espacio-arriba"></span>' : ''}<div class="seccion-titulo">${lineaProcesada}</div>`;
+                else if (linea.startsWith("SITUACIÓN SINÓPTICA:") || linea.startsWith("PRONÓSTICO:")) {
+                    htmlContent += `${linea.startsWith("PRONÓSTICO:") ? '<span class="espacio-arriba"></span>' : ''}<div class="seccion-titulo">${lineaProcesada}</div>`;
                 }
                 else if (linea.includes("(CH") && linea.includes(":")) {
                     htmlContent += `<div class="negrita" style="margin-top:5px;">${lineaProcesada}</div>`;
                 }
-                else if (linea.includes("TEMPERATURA MINIMA PROBABLE") || linea.includes("TEMPERATURA MAXIMA PROBABLE") || linea.includes("INDICE DE RADIACION ULTRAVIOLETA")) {
-                    if (linea.includes("TEMPERATURA MINIMA PROBABLE")) { htmlContent += `<span class="espacio-arriba"></span>`; }
+                else if (linea.includes("TEMPERATURA MÍNIMA PROBABLE") || linea.includes("TEMPERATURA MÁXIMA PROBABLE") || linea.includes("ÍNDICE DE RADIACIÓN ULTRAVIOLETA")) {
+                    if (linea.includes("TEMPERATURA MÍNIMA PROBABLE")) { htmlContent += `<span class="espacio-arriba"></span>`; }
                     let partes = linea.split(':');
                     htmlContent += `<div class="contenedor-temp"><div>${partes[0].trim()}</div><div>:</div><div>${partes[1] ? partes[1].trim() : ""}</div></div>`;
                 }
@@ -369,7 +403,7 @@
                     <div class="footer-bold">CENTRO ZONAL DE METEOROLOGÍA MARINA DE PUERTO MONTT</div>
                     <div class="footer-normal">
                         <span class="footer-link-azul">HTTP://METEOARMADA.DIRECTEMAR.CL // @METARMADA_PMO</span><br>
-                        AVENIDA ANGELMO 2201, PUERTO MONTT<br>
+                        AVENIDA ANGELMÓ 2201, PUERTO MONTT<br>
                         TEL: (65) 2205174
                     </div>
                 </div>`;
