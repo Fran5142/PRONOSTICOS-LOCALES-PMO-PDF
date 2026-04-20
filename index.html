@@ -382,7 +382,7 @@
                     htmlContent += `<div class="titulo-principal">${lineaProcesada}</div>`;
                     if (index === 1) htmlContent += `<span class="espacio-arriba"></span>`; 
                 }
-                else if (esValidez || /^(SABADO|DOMINGO|LUNES|MARTES|MIERCOLES|JUEVES|VIERNES)\s+\d+/i.test(linea)) {
+		else if (esValidez || /^(SABADO|DOMINGO|LUNES|MARTES|MIÉRCOLES|JUEVES|VIERNES)\s+\d+(\.)?/i.test(linea)) {
                     htmlContent += `<span class="espacio-arriba"></span><div class="negrita">${lineaProcesada}</div>`;
                 }
                 else if (linea.startsWith("SITUACIÓN SINÓPTICA:") || linea.startsWith("PRONÓSTICO:")) {
