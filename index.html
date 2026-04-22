@@ -236,7 +236,7 @@
             <button class="btn-accion btn-oficio" onclick="generarPDF('legal')">📄 PDF Oficio</button>
         </div>
 
-        <div class="autor-web">Creado por Cabo 1º (Met.) Francisco Salas Muñoz</div>
+        <div class="autor-web">Creado por C1º (Met.) Francisco Salas Muñoz</div>
     </div>
 
     <div id="vistaPrevia"></div>
@@ -275,22 +275,19 @@
                 "PROBABLE": "PROBABLE",
                 "MIERCOLES": "MIÉRCOLES",
                 "SABADO": "SÁBADO",
-
                 "METEOROLOGIA": "METEOROLOGÍA",
                 "ANTICICLONICO": "ANTICICLÓNICO",
                 "CIRCULACION": "CIRCULACIÓN",
                 "CICLONICA": "CICLÓNICA",
                 "BAHIA": "BAHÍA",
                 "MARITIMO": "MARÍTIMO",
-		"APROXIMACION": "APROXIMACIÓN",
-		"AYSEN": "AYSÉN",
-		"QUELLON": "QUELLÓN",
-		"MAULLIN": "MAULLÍN",
-		"CHILOE": "CHILOÉ",
-		"OCEANICO": "OCEÁNICO",
-		"DEBIL": "DÉBIL"
-
- 
+                "APROXIMACION": "APROXIMACIÓN",
+                "AYSEN": "AYSÉN",
+                "QUELLON": "QUELLÓN",
+                "MAULLIN": "MAULLÍN",
+                "CHILOE": "CHILOÉ",
+                "OCEANICO": "OCEÁNICO",
+                "DEBIL": "DÉBIL"
             };
 
             // Aplicamos las correcciones palabra por palabra
@@ -382,7 +379,7 @@
                     htmlContent += `<div class="titulo-principal">${lineaProcesada}</div>`;
                     if (index === 1) htmlContent += `<span class="espacio-arriba"></span>`; 
                 }
-		else if (esValidez || /^(SABADO|DOMINGO|LUNES|MARTES|MIÉRCOLES|JUEVES|VIERNES)\s+\d+(\.)?/i.test(linea)) {
+		        else if (esValidez || /^(SÁBADO|SABADO|DOMINGO|LUNES|MARTES|MIÉRCOLES|MIERCOLES|JUEVES|VIERNES)\s+\d+(\.)?/i.test(linea)) {
                     htmlContent += `<span class="espacio-arriba"></span><div class="negrita">${lineaProcesada}</div>`;
                 }
                 else if (linea.startsWith("SITUACIÓN SINÓPTICA:") || linea.startsWith("PRONÓSTICO:")) {
