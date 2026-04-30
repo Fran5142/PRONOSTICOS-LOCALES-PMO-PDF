@@ -248,7 +248,8 @@
     <script>
         let mesGlobalIndex = new Date().getMonth();
         let añoGlobal = new Date().getFullYear();
-        let ultimoDiaProcesado = 0;
+        // INICIALIZADO AL DÍA DE HOY EN VEZ DE 0
+        let ultimoDiaProcesado = new Date().getDate(); 
 
         function setNombre(nombre) { 
             document.getElementById('nombreArchivo').value = nombre; 
@@ -288,7 +289,8 @@
                 "MAULLIN": "MAULLÍN",
                 "CHILOE": "CHILOÉ",
                 "OCEANICO": "OCEÁNICO",
-                "DEBIL": "DÉBIL"
+                "DEBIL": "DÉBIL",
+                "NW": "NORWESTE" // Regla agregada
             };
 
             // Aplicamos las correcciones palabra por palabra
@@ -347,7 +349,8 @@
         function generarVista() {
             mesGlobalIndex = new Date().getMonth();
             añoGlobal = new Date().getFullYear();
-            ultimoDiaProcesado = 0;
+            // INICIALIZADO AL DÍA DE HOY EN VEZ DE 0 CADA VEZ QUE SE GENERA LA VISTA
+            ultimoDiaProcesado = new Date().getDate(); 
             
             let texto = document.getElementById("textoInforme").value.trim();
             if (!texto) return;
